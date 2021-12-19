@@ -1,0 +1,82 @@
+---
+title: "DATA601 Final Project"
+output: html_document
+---
+
+# Clean crash data
+```{r setup, include=FALSE}
+crash <- read.csv('dataset/vehicle_crash.csv') %>%
+  filter(YEAR == 2020 | YEAR == 2021)%>%
+  select(YEAR, QUARTER, LIGHT_DESC, COUNTY_DESC,
+         COLLISION_TYPE_DESC, SURF_COND_DESC, REPORT_NO,
+         REPORT_TYPE, WEATHER_DESC, HARM_EVENT_DESC1, 
+         HARM_EVENT_DESC2, ACC_DATE, ACC_TIME, LATITUDE,
+         LONGITUDE, LOCATION)
+write_csv(crash, 'dataset/cleaned-crash.csv')
+```
+
+# Clean vehicle data
+```{r}
+vehicle <- read.csv('dataset/vehicle_detail.csv') %>%
+  filter(YEAR == 2020 | YEAR == 2021)%>%
+  select(YEAR, Quarter, REPORT_NO, HARM_EVENT_DESC,
+         VEH_YEAR, VEH_MAKE, GOING_DIRECTION_DESC,
+         SPEED_LIMIT, HIT_AND_RUN_FLAG_DESC)
+write_csv(vehicle, 'dataset/cleaned-vehicle.csv')
+```
+
+# Clean person data
+```{r}
+person <- read.csv('dataset/person.csv') %>%
+  filter(YEAR == 2020 | YEAR == 2021)%>%
+  select(YEAR, Quarter, SEX_DESC, SEX_CODE,
+         INJ_SEVER_DESC, REPORT_NO, ALCOHOL_TEST_DESC,
+         ALCOHOL_TESTTYPE_DESC, DRUG_TEST_DESC,
+         DRUG_TESTRESULT_DESC, EJECT_DESC, SAF_EQUIP_DESC,
+         DATE_OF_BIRTH, AIRBAG_DEPLOYED)
+write_csv(person, 'dataset/cleaned-person.csv')
+```
+
+```{r}
+crash_baltimore <- read.csv('dataset/cleaned-crash.csv')%>%
+filter(COUNTY_DESC == 'Baltimore') 
+write_csv(crash_baltimore, 'dataset/crash-baltimore.csv')
+```
+
+```{r}
+cleaned_crash <- read_csv('dataset/cleaned-crash.csv') 
+cleaned_vehicle <- read_csv('dataset/cleaned-vehicle.csv')
+```
+
+# Merge the three dataset together
+```{r}
+merged_data <- merge(cleaned_crash, cleaned_person, by = 'REPORT_NO') %>%
+  merge(cleaned_vehicle, by = 'REPORT_NO')
+```
+
+# Remove duplicates
+```{r}
+library(dplyr)
+merged_data <- 
+  distinct(merged_data)
+```
+
+# Drop unnecessary columns
+```{r}
+library(dplyr)
+merged_data <- merged_data %>%
+  select(-c(YEAR.x, YEAR.y, Quarter.y, LOCATION, Quarter.x))
+```
+
+# Write the merged_data
+```{r}
+write_csv(merged_data, 'dataset/merged-data.csv')
+```
+
+
+
+
+```{r}
+rm(person, vehicle)
+```
+
